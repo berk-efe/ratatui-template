@@ -3,9 +3,7 @@ use std::io;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
-    buffer::Buffer,
-    layout::{Constraint, Direction, Layout, Rect},
-    widgets::Widget,
+    layout::{Constraint, Direction, Layout},
 };
 
 use crate::widgets::counter::Counter;
@@ -27,7 +25,7 @@ impl App {
     }
 
     fn draw(&mut self, frame: &mut Frame) {
-        frame.render_widget(&*self, frame.area());
+        self.render(frame);
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
@@ -49,6 +47,21 @@ impl App {
         }
     }
 
+    fn render(&mut self, frame: &mut Frame) {
+        let main_layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![
+                Constraint::Fill(1),
+                Constraint::Fill(1),
+                Constraint::Fill(1),
+            ])
+            .split(frame.area());
+
+        let (counter_area, _area_1, _area_2) = (main_layout[0], main_layout[1], main_layout[2]);
+
+        frame.render_widget(&self.counter, counter_area);
+    }
+
     fn exit(&mut self) {
         self.exit = true;
     }
@@ -63,22 +76,5 @@ impl Default for App {
                 count: 0,
             },
         }
-    }
-}
-
-impl Widget for &App {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        let main_layout = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(vec![
-                Constraint::Fill(1),
-                Constraint::Fill(1),
-                Constraint::Fill(1),
-            ])
-            .split(area);
-
-        let (counter_area, _area_1, _area_2) = (main_layout[0], main_layout[1], main_layout[2]);
-
-        self.counter.render(counter_area, buf);
     }
 }
